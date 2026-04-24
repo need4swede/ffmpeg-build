@@ -120,3 +120,4 @@ dist/
 *.xcframework
 *.zip
 Package.resolved
+build_ffmpeg

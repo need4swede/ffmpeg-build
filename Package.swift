@@ -217,38 +217,31 @@ let package = Package(
 
         .binaryTarget(
             name: "Libavcodec",
-            url: "https://github.com/mpvkit/ffmpeg-build/releases/download/7.1.0/Libavcodec.xcframework.zip",
-            checksum: "f952b17b58693a473f7d76babd61ff7f9af9291e93e84f28c872909161e360b4"
+            path: "dist/release/xcframework/Libavcodec.xcframework"
         ),
         .binaryTarget(
             name: "Libavdevice",
-            url: "https://github.com/mpvkit/ffmpeg-build/releases/download/7.1.0/Libavdevice.xcframework.zip",
-            checksum: "4fb6d2056ffbcabd88315dd32530555f9abddd77313e5ab0d4b8fa22c144e061"
+            path: "dist/release/xcframework/Libavdevice.xcframework"
         ),
         .binaryTarget(
             name: "Libavformat",
-            url: "https://github.com/mpvkit/ffmpeg-build/releases/download/7.1.0/Libavformat.xcframework.zip",
-            checksum: "d81abdfc297b4f9c9177a7b717b333faa1b44088cb523c040d63ca0cafa8529c"
+            path: "dist/release/xcframework/Libavformat.xcframework"
         ),
         .binaryTarget(
             name: "Libavfilter",
-            url: "https://github.com/mpvkit/ffmpeg-build/releases/download/7.1.0/Libavfilter.xcframework.zip",
-            checksum: "178fe17501d299431444ad4753112aa16b3e17b3747a0a3ccfd795d67460c6ed"
+            path: "dist/release/xcframework/Libavfilter.xcframework"
         ),
         .binaryTarget(
             name: "Libavutil",
-            url: "https://github.com/mpvkit/ffmpeg-build/releases/download/7.1.0/Libavutil.xcframework.zip",
-            checksum: "db6e4006b9f47273b2871a17c73c04382a21d9629edbd1917eeadfe7883c2b2d"
+            path: "dist/release/xcframework/Libavutil.xcframework"
         ),
         .binaryTarget(
             name: "Libswresample",
-            url: "https://github.com/mpvkit/ffmpeg-build/releases/download/7.1.0/Libswresample.xcframework.zip",
-            checksum: "3f9b9167c2ecf5884438fa1d8162439d2cc3786128f6fedc0aa7b1104bd9e22b"
+            path: "dist/release/xcframework/Libswresample.xcframework"
         ),
         .binaryTarget(
             name: "Libswscale",
-            url: "https://github.com/mpvkit/ffmpeg-build/releases/download/7.1.0/Libswscale.xcframework.zip",
-            checksum: "63685fef38ae5eafaa0b4b67c79885efed9b386ffa61be86a9e4baeffb89ef7e"
+            path: "dist/release/xcframework/Libswscale.xcframework"
         ),
         //AUTO_GENERATE_TARGETS_END//
     ]
