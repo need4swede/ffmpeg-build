@@ -176,7 +176,7 @@ let package = Package(
         .binaryTarget(
             name: "Libuavs3d",
             url: "https://github.com/mpvkit/libuavs3d-build/releases/download/1.2.1/Libuavs3d.xcframework.zip",
-            checksum: "893257fc73c61b87fb45ee9de7df6ac4a6967062d7cac2c8d136cd2774a04971"
+            checksum: "bd046296eb1772b596a8bb0cfc8c1b588165db85d77d214bc961ac658dab0d5a"
         ),
 
         .binaryTarget(
