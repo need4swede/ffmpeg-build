@@ -1,0 +1,80 @@
+From 0c14ac8d5f19f22f31ae9505e3db5eb417e8d6e0 Mon Sep 17 00:00:00 2001
+From: llyyr <llyyr.public@gmail.com>
+Date: Sun, 27 Oct 2024 06:52:42 +0530
+Subject: [PATCH] avformat/hls: preserve rebased target-segment timestamps
+
+The HLS demuxer selects the target segment before entering its packet
+discard loop. Requiring that segment's first keyframe to also meet the
+playlist-derived timestamp can discard the only usable entry point when the
+segment timestamps were rebased by the server (as Jellyfin does when it
+restarts a dynamic HLS encode at a requested segment). Returning that packet
+without restoring the playlist timeline is also insufficient: consumers see a
+timestamp near zero for a segment far into the presentation.
+
+This restores the HLS seek patch carried by ffmpeg-build before the FFmpeg
+8.0.1 upgrade and extends it by retaining the segment-to-playlist timestamp
+offset for subsequent packets. The MOV stream-position-reset half of the
+original patch is already present upstream in 8.0.1.
+
+Co-Authored-by: vectronic <hello.vectronic@gmail.com>
+---
+ libavformat/hls.c | 24 ++++++++++++++++++++++--
+ 1 file changed, 22 insertions(+), 2 deletions(-)
+
+diff --git a/libavformat/hls.c b/libavformat/hls.c
+index 22ee1c6872..16b9101d9e 100644
+--- a/libavformat/hls.c
++++ b/libavformat/hls.c
+@@ -159,6 +159,7 @@ struct playlist {
+     HLSAudioSetupInfo audio_setup_info;
+ 
+     int64_t seek_timestamp;
++    int64_t seek_timestamp_offset;
+     int seek_flags;
+     int seek_stream_index; /* into subdemuxer stream array */
+ 
+@@ -2566,14 +2567,32 @@ static int hls_read_packet(AVFormatContext *s, AVPacket *pkt)
+                     ts_diff = av_rescale_rnd(pls->pkt->dts, AV_TIME_BASE,
+                                             tb.den, AV_ROUND_DOWN) -
+                             pls->seek_timestamp;
+-                    if (ts_diff >= 0 && (pls->seek_flags  & AVSEEK_FLAG_ANY ||
+-                                        pls->pkt->flags & AV_PKT_FLAG_KEY)) {
++                    /* If AVSEEK_FLAG_ANY, keep reading until ts_diff >= 0,
++                     * otherwise return the first keyframe encountered. */
++                    if ((ts_diff >= 0 && (pls->seek_flags & AVSEEK_FLAG_ANY)) ||
++                        (!(pls->seek_flags & AVSEEK_FLAG_ANY) &&
++                         (pls->pkt->flags & AV_PKT_FLAG_KEY))) {
++                        /* Some dynamic HLS servers restart encoding at the
++                         * requested segment and rebase that segment's packet
++                         * timestamps. Preserve the playlist timeline for the
++                         * caller when accepting such an early keyframe. */
++                        if (ts_diff < 0 && !(pls->seek_flags & AVSEEK_FLAG_ANY))
++                            pls->seek_timestamp_offset = -ts_diff;
+                         pls->seek_timestamp = AV_NOPTS_VALUE;
+                         break;
+                     }
+                 }
+                 av_packet_unref(pls->pkt);
+             }
++            if (pls->pkt->data && pls->seek_timestamp_offset) {
++                const int64_t offset = av_rescale_q(pls->seek_timestamp_offset,
++                                                    AV_TIME_BASE_Q,
++                                                    get_timebase(pls));
++                if (pls->pkt->pts != AV_NOPTS_VALUE)
++                    pls->pkt->pts += offset;
++                if (pls->pkt->dts != AV_NOPTS_VALUE)
++                    pls->pkt->dts += offset;
++            }
+         }
+         /* Check if this stream has the packet with the lowest dts */
+         if (pls->pkt->data) {
+@@ -2730,6 +2749,7 @@ static int hls_read_seek(AVFormatContext *s, int stream_index,
+         pls->cur_init_section = NULL;
+ 
+         pls->seek_timestamp = seek_timestamp;
++        pls->seek_timestamp_offset = 0;
+         pls->seek_flags = flags;
+ 
+         if (pls != seek_pls) {
+-- 
+2.50.1
