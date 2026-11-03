@@ -209,10 +209,12 @@ let package = Package(
             checksum: "f32d20351289a080cd7288742747cd927553fde8c217f63263b838083d07a01a"
         ),
 
+        // Built locally with scripts/build-libdav1d.sh (dav1d with its ARM64
+        // assembly). The mpvkit 1.4.3 release used before had no assembly in
+        // any slice. See docs/dav1d.md.
         .binaryTarget(
             name: "Libdav1d",
-            url: "https://github.com/mpvkit/libdav1d-build/releases/download/1.4.3/Libdav1d.xcframework.zip",
-            checksum: "eccfe37da9418e350bc6c1566890fa5b9585fbb87b8ceb664de77800ef17fe04"
+            path: "dist/release/xcframework/Libdav1d.xcframework"
         ),
 
         .binaryTarget(
